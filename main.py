@@ -3,11 +3,26 @@ from scrapers.bbc import scrape_bbc, get_article_text_bbc
 from scrapers.base import close_browser
 from summarizer.hf_summarizer import summarize_article
 from bot.telegram_bot import send_message
-import asyncio
 from datetime import date
+import asyncio
+import concurrent.futures
 
 INQUIRER = 'https://newsinfo.inquirer.net/'
 BBC = 'https://www.bbc.com/news/world'
+
+def send(text: str):
+    """Safely run the async send_message from a synchronous context."""
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # Playwright may leave a running loop — spin up a fresh thread with its own loop
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(asyncio.run, send_message(text))
+                future.result()
+        else:
+            loop.run_until_complete(send_message(text))
+    except RuntimeError:
+        asyncio.run(send_message(text))
 
 def inquirer(url: str, today: str):
     articles = scrape_inquirer(url)[:10]
@@ -27,7 +42,7 @@ def inquirer(url: str, today: str):
 
     header = f'----- INQUIRER LATEST NEWS ({today}) ----- \n\n'
     combined_summaries = "\n\n".join(summary_list)
-    asyncio.run(send_message(header + combined_summaries))
+    send(header + combined_summaries)
 
 def bbc(url: str, today: str):
     articles = scrape_bbc(url)[:10]
@@ -47,7 +62,7 @@ def bbc(url: str, today: str):
 
     header = f'----- BBC LATEST NEWS ({today}) ----- \n\n'
     combined_summaries = "\n\n".join(summary_list)
-    asyncio.run(send_message(header + combined_summaries))
+    send(header + combined_summaries)
 
 def main():
     today_date = date.today().strftime("%A, %B %d, %Y")
