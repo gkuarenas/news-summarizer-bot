@@ -24,7 +24,7 @@ def scrape_inquirer(url):
             
     return articles
 
-def get_article_text(url: str) -> str:
+def get_article_text_inquirer(url: str) -> str:
     soup = fetch_html(url, wait_for="script[type='application/ld+json']")
     script_tag = soup.find("script", type="application/ld+json")
 
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     time.sleep(2)
 
     article_url = results[0]["url"]
-    print(get_article_text(article_url))
+    print(get_article_text_inquirer(article_url))
 
     close_browser()
 
