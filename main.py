@@ -2,9 +2,10 @@ from scrapers.inquirer import scrape_inquirer
 from summarizer.hf_summarizer import summarize_article
 from bot.telegram_bot import send_message
 import asyncio
+from datetime import date
 
 def main():
-    articles = scrape_inquirer()[:15]
+    articles = scrape_inquirer()[:10]
     summary_list = []
 
     for a in articles:
@@ -18,7 +19,8 @@ def main():
         except Exception:
             continue
     
-    header = '----- INQUIRER LATEST NEWS ----- \n\n'
+    today = date.today().strftime("%A, %B %d, %Y")
+    header = f'----- INQUIRER LATEST NEWS ({today}) ----- \n\n'
     combined_summaries = "\n\n".join(summary_list)
     asyncio.run(send_message(header + combined_summaries))
     
