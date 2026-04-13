@@ -1,4 +1,4 @@
-from base import fetch_html, close_browser
+from scrapers.base import fetch_html, close_browser
 from bs4 import BeautifulSoup
 import json
 import html as html_module

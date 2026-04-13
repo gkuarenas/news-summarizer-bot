@@ -1,4 +1,4 @@
-from base import fetch_html, close_browser
+from scrapers.base import fetch_html, close_browser
 import time
 
 def scrape_bbc(url):
