@@ -7,7 +7,6 @@ A Python script that scrapes the latest headlines from Inquirer.net (at the mome
 - Scrapes the top 10 articles from Inquirer.net
 - Summarizes each article using `facebook/bart-large-cnn`
 - Sends a formatted digest to a Telegram chat
-- Scheduled via Windows Task Scheduler to run at 6am
 
 ## Project Structure
 
