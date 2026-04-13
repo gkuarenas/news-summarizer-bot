@@ -9,7 +9,7 @@ build/
 
 # ---- Virtual env ----
 .venv/
-.env/
+.env
 
 # ---- OS / Editor ----
 .DS_Store
