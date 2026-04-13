@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from scrapers.article_parser import get_article_text
 
 load_dotenv()
 
@@ -12,8 +11,7 @@ HEADERS = {
     "Authorization": f"Bearer {os.environ['HF_API_TOKEN']}",
 }
 
-def summarize_article(title, url):
-    text = get_article_text(url)
+def summarize_article(title, text):
 
     input_text = f"{title}\n\n{text}"
     input_text = input_text[:3000]
