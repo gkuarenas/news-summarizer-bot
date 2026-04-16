@@ -4,7 +4,7 @@ A Python script that scrapes the latest headlines from Inquirer, BBC, and Techcr
 
 ## Features
 
-- Scrapes the top 10 articles from Inquirer.net
+- Scrapes the top 10 latest articles from Inquirer, BBC, and Techcrunch
 - Summarizes each article using `facebook/bart-large-cnn`
 - Sends a formatted digest to a Telegram chat
 
