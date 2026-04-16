@@ -1,6 +1,6 @@
 # Morning News Summarizer - Telegram Bot
 
-A Python script that scrapes the latest headlines from Inquirer and BBC (at the moment), summarizes them using the HuggingFace Inference API, and delivers a digest to a Telegram bot every morning.
+A Python script that scrapes the latest headlines from Inquirer, BBC, and Techcrunch (at the moment), summarizes them using the HuggingFace Inference API, and delivers a digest to a Telegram bot every morning.
 
 ## Features
 
@@ -15,7 +15,10 @@ news-summarizer/
 ├── bot/
 │   └── telegram_bot.py
 ├── scrapers/
-│   └── inquirer.py
+│   └── base.py
+|   └── inquirer.py
+|   └── bbc.py
+|   └── techcrunch.py
 │   └── article_parser.py
 ├── summarizer/
 │   └── hf_summarizer.py
