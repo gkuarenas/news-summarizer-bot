@@ -1,5 +1,6 @@
 from scrapers.inquirer import scrape_inquirer, get_article_text_inquirer
 from scrapers.bbc import scrape_bbc, get_article_text_bbc
+from scrapers.techcrunch import scrape_techcrunch, get_article_text_techcrunch
 from scrapers.base import close_browser
 from summarizer.hf_summarizer import summarize_article
 from bot.telegram_bot import send_message
@@ -9,6 +10,7 @@ import concurrent.futures
 
 INQUIRER = 'https://newsinfo.inquirer.net/'
 BBC = 'https://www.bbc.com/news/world'
+TECHCRUNCH = "https://techcrunch.com/category/artificial-intelligence/"
 
 def send(text: str):
     """Safely run the async send_message from a synchronous context."""
@@ -64,11 +66,32 @@ def bbc(url: str, today: str):
     combined_summaries = "\n\n".join(summary_list)
     send(header + combined_summaries)
 
+def techcrunch(url: str, today: str):
+    articles = scrape_techcrunch(url)[:10]
+    summary_list = []
+
+    for a in articles:
+        title = a.get("title")
+        article_url = a.get("url")
+        try:
+            text = get_article_text_techcrunch(article_url)
+            summary = summarize_article(title, text)
+            print(f"Summarizing: {title}...")
+            summary_list.append(summary)
+        except Exception as e:
+            print(f"Skipping article '{title}': {e}")
+            continue
+
+    header = f'----- TECHCRUNCH LATEST NEWS ({today}) ----- \n\n'
+    combined_summaries = "\n\n".join(summary_list)
+    send(header + combined_summaries)
+
 def main():
     today_date = date.today().strftime("%A, %B %d, %Y")
     try:
-        inquirer(INQUIRER, today_date)
+        #inquirer(INQUIRER, today_date)
         bbc(BBC, today_date)
+        techcrunch(TECHCRUNCH, today_date)
     finally:
         close_browser()
 
