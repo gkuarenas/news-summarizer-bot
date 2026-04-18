@@ -1,72 +1,50 @@
-# Morning News Summarizer - Telegram Bot
+# Morning News Summarizer — Telegram Bot
 
-A Python script that scrapes the latest headlines from Inquirer, BBC, and Techcrunch (at the moment), summarizes them using the HuggingFace Inference API, and delivers a digest to a Telegram bot every morning.
+A Python bot that scrapes headlines from **Inquirer, BBC, and TechCrunch**, summarizes them using `facebook/bart-large-cnn` via HuggingFace, and sends a morning digest to Telegram — automatically, every day at 6AM Manila time.
+
+---
 
 ## Features
 
-- Scrapes the top 10 latest articles from Inquirer, BBC, and Techcrunch
-- Summarizes each article using `facebook/bart-large-cnn`
+- Scrapes the top 10 latest articles from 3 sources
+- Summarizes each article using HuggingFace Inference API
 - Sends a formatted digest to a Telegram chat
+- Runs daily via GitHub Actions, triggered reliably by cron-job.org
+
+## Tech Stack
+
+| Layer | Tool |
+|---|---|
+| Scraping | Playwright (Chromium) |
+| Summarization | `facebook/bart-large-cnn` (HuggingFace) |
+| Delivery | Telegram Bot API |
+| Scheduling | GitHub Actions + cron-job.org |
 
 ## Project Structure
 
 ```
 news-summarizer/
 ├── bot/
-│   └── telegram_bot.py
 ├── scrapers/
-│   └── base.py
-|   └── inquirer.py
-|   └── bbc.py
-|   └── techcrunch.py
-│   └── article_parser.py
 ├── summarizer/
-│   └── hf_summarizer.py
-├── main.py
-├── .env
-├── .gitignore
-└── requirements.txt
+├── .github/workflows/morning-news.yml
+└── main.py
 ```
-
-## Requirements
-
-- Python 3.10+
-- Playwright (Chromium)
-- HuggingFace Inference API key
-- Telegram bot token and chat ID
 
 ## Setup
 
-1. Clone the repository.
-
-2. Create and activate a virtual environment.
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-```
-
-3. Install dependencies.
-
-```bash
-pip install -r requirements.txt
-playwright install chromium
-```
-
-4. Create a `.env` file in the root directory with the following variables.
+1. Clone the repo and create a virtual environment
+2. Install dependencies: `pip install -r requirements.txt && playwright install chromium`
+3. Create a `.env` file:
 
 ```
-TELEGRAM_BOT_TOKEN=your_token_here
-TELEGRAM_CHAT_ID=your_chat_id_here
-HF_API_KEY=your_huggingface_api_key_here
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+HF_API_KEY=
 ```
 
-5. Run the script manually to test.
+4. Run manually: `python main.py`
 
-```bash
-python main.py
-```
+## Scheduling
 
-## Notes
-
-- Articles that fail to scrape or summarize are skipped automatically.
+Runs daily at **6AM Manila time (UTC+8)** via GitHub Actions `workflow_dispatch`, triggered externally by [cron-job.org](https://cron-job.org) for reliable execution on the free tier.
