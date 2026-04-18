@@ -89,7 +89,7 @@ def techcrunch(url: str, today: str):
 def main():
     today_date = date.today().strftime("%A, %B %d, %Y")
     try:
-        #inquirer(INQUIRER, today_date)
+        inquirer(INQUIRER, today_date)
         bbc(BBC, today_date)
         techcrunch(TECHCRUNCH, today_date)
     finally:
