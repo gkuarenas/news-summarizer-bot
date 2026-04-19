@@ -3,7 +3,7 @@ name: Morning News Summarizer
 on:
   workflow_dispatch:
   schedule:
-    - cron: "20 4 * * *"
+    - cron: "0 10 * * *"
 
 jobs:
   run-summarizer:
