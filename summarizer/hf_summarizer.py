@@ -18,7 +18,7 @@ def summarize_article(title: str, text: str) -> tuple[str, int, int, dict]:
 
     input_text = f"{title}\n\n{text}"
     original_word_count = len(input_text.split())
-    input_text = input_text[:3000]
+    truncated = input_text[:3000]
 
     response = requests.post(API_URL, headers=HEADERS, json={"inputs": input_text})
     response.raise_for_status()
