@@ -44,7 +44,6 @@ class RunMetrics:
         self.scrapers_failed = 0
         self.failed_scrapers: list[str] = []
 
-    # ── call these from your scraper functions ─────────────────────────────────
 
     def record_article_attempt(self):
         self.articles_scraped += 1
