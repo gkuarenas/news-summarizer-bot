@@ -4,6 +4,7 @@ from scrapers.techcrunch import scrape_techcrunch, get_article_text_techcrunch
 from scrapers.base import close_browser
 from summarizer.hf_summarizer import summarize_article
 from bot.telegram_bot import send_message
+from run_metrics import RunMetrics
 from datetime import date
 import asyncio
 import concurrent.futures
@@ -12,12 +13,11 @@ INQUIRER = 'https://newsinfo.inquirer.net/'
 BBC = 'https://www.bbc.com/news/world'
 TECHCRUNCH = "https://techcrunch.com/category/artificial-intelligence/"
 
+
 def send(text: str):
-    """Safely run the async send_message from a synchronous context."""
     try:
         loop = asyncio.get_event_loop()
         if loop.is_running():
-            # Playwright may leave a running loop — spin up a fresh thread with its own loop
             with concurrent.futures.ThreadPoolExecutor() as pool:
                 future = pool.submit(asyncio.run, send_message(text))
                 future.result()
@@ -26,74 +26,73 @@ def send(text: str):
     except RuntimeError:
         asyncio.run(send_message(text))
 
-def inquirer(url: str, today: str):
+
+def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) -> list[str]:
+    summary_list = []
+
+    for a in articles:
+        title = a.get("title")
+        article_url = a.get("url")
+        metrics.record_article_attempt()
+        try:
+            text = get_text_fn(article_url)
+            summary_text, original_words, summary_words, rouge_scores = summarize_article(title, text)
+            print(f"Summarizing: {title}...")
+            metrics.record_article_success(original_words, summary_words, rouge_scores)
+
+            compression = round((1 - summary_words / original_words) * 100, 2)
+            print(f"  → compressed by {compression}%  |  ROUGE-L {rouge_scores['rougeL']}")
+
+            summary_list.append(summary_text)
+        except Exception as e:
+            print(f"Skipping article '{title}': {e}")
+
+    return summary_list
+
+
+def inquirer(url: str, today: str, metrics: RunMetrics):
     articles = scrape_inquirer(url)[:10]
-    summary_list = []
-
-    for a in articles:
-        title = a.get("title")
-        article_url = a.get("url")
-        try:
-            text = get_article_text_inquirer(article_url)
-            summary = summarize_article(title, text)
-            print(f"Summarizing: {title}...")
-            summary_list.append(summary)
-        except Exception as e:
-            print(f"Skipping article '{title}': {e}")
-            continue
-
+    summary_list = _summarize_articles(articles, get_article_text_inquirer, metrics)
     header = f'----- INQUIRER LATEST NEWS ({today}) ----- \n\n'
-    combined_summaries = "\n\n".join(summary_list)
-    send(header + combined_summaries)
+    send(header + "\n\n".join(summary_list))
 
-def bbc(url: str, today: str):
+
+def bbc(url: str, today: str, metrics: RunMetrics):
     articles = scrape_bbc(url)[:10]
-    summary_list = []
-
-    for a in articles:
-        title = a.get("title")
-        article_url = a.get("url")
-        try:
-            text = get_article_text_bbc(article_url)
-            summary = summarize_article(title, text)
-            print(f"Summarizing: {title}...")
-            summary_list.append(summary)
-        except Exception as e:
-            print(f"Skipping article '{title}': {e}")
-            continue
-
+    summary_list = _summarize_articles(articles, get_article_text_bbc, metrics)
     header = f'----- BBC LATEST NEWS ({today}) ----- \n\n'
-    combined_summaries = "\n\n".join(summary_list)
-    send(header + combined_summaries)
+    send(header + "\n\n".join(summary_list))
 
-def techcrunch(url: str, today: str):
+
+def techcrunch(url: str, today: str, metrics: RunMetrics):
     articles = scrape_techcrunch(url)[:10]
-    summary_list = []
-
-    for a in articles:
-        title = a.get("title")
-        article_url = a.get("url")
-        try:
-            text = get_article_text_techcrunch(article_url)
-            summary = summarize_article(title, text)
-            print(f"Summarizing: {title}...")
-            summary_list.append(summary)
-        except Exception as e:
-            print(f"Skipping article '{title}': {e}")
-            continue
-
+    summary_list = _summarize_articles(articles, get_article_text_techcrunch, metrics)
     header = f'----- TECHCRUNCH LATEST NEWS ({today}) ----- \n\n'
-    combined_summaries = "\n\n".join(summary_list)
-    send(header + combined_summaries)
+    send(header + "\n\n".join(summary_list))
+
 
 def main():
     today_date = date.today().strftime("%A, %B %d, %Y")
-    try:
-        inquirer(INQUIRER, today_date)
-        bbc(BBC, today_date)
-        techcrunch(TECHCRUNCH, today_date)
-    finally:
-        close_browser()
+    metrics = RunMetrics()
+
+    scrapers = [
+        (inquirer,   INQUIRER),
+        (bbc,        BBC),
+        (techcrunch, TECHCRUNCH),
+    ]
+
+    for scraper_fn, url in scrapers:
+        name = scraper_fn.__name__
+        try:
+            scraper_fn(url, today_date, metrics)
+            metrics.record_scraper_success()
+        except Exception as e:
+            print(f"[ERROR] {name} failed: {e}")
+            metrics.record_scraper_failure(name)
+
+    close_browser()
+    metrics.flush()   # → metrics.csv  +  GitHub Actions Job Summary
+
 
 if __name__ == "__main__":
     main()
