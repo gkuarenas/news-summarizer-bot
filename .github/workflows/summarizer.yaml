@@ -1,8 +1,6 @@
 name: Morning News Summarizer
 
 on:
-  schedule:
-    - cron: "0 1 * * *"   # 09:00 PHT  (UTC+8)
   workflow_dispatch:        # allow manual runs
 
 jobs:
