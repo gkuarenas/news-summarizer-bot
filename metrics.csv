@@ -1,2 +1,3 @@
 run_date,status,scrapers_ok,scrapers_failed,articles_scraped,articles_ok,avg_compression,avg_rouge1,avg_rouge2,avg_rougeL
 2026-04-20T05:49:11Z,SUCCESS,3,0,30,24,68.1683,0.2427,0.2126,0.2157
+2026-04-20T06:21:43Z,SUCCESS,3,0,30,29,73.2607,0.2272,0.2017,0.2042
