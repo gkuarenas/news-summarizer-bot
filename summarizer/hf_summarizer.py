@@ -14,14 +14,12 @@ HEADERS = {
 def summarize_article(title, text):
 
     input_text = f"{title}\n\n{text}"
+    original_word_count = len(input_text.split())
     input_text = input_text[:3000]
 
     response = requests.post(API_URL, headers=HEADERS, json={"inputs": input_text})
     result = response.json()
 
-    return result[0]["summary_text"]
+    summary_word_count = len(result[0]["summary_text"].split())
 
-if __name__ == '__main__':
-    test_title = "Diesel to drop by nearly P21/L as gasoline prices also cut"
-    test_url = "https://newsinfo.inquirer.net/2211062/diesel-to-drop-by-nearly-p21-l-as-gasoline-prices-also-cut"
-    print(summarize_article(test_title, test_url))
+    return result[0]["summary_text"], original_word_count, summary_word_count
