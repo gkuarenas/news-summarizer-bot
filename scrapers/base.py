@@ -1,6 +1,6 @@
 from playwright.async_api import async_playwright, Browser
 from bs4 import BeautifulSoup
-import time
+import asyncio
 import random
 
 
@@ -59,6 +59,7 @@ async def fetch_html(url: str, wait_for: str = None, retries: int = 3) -> Beauti
                 else:
                     await browser.close()
                     raise
+
 
 async def close_browser():
     pass

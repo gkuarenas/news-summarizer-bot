@@ -2,7 +2,7 @@ from scrapers.base import fetch_html, close_browser
 from bs4 import BeautifulSoup
 import json
 import html as html_module
-import time
+import asyncio
 
 async def scrape_inquirer(url):
     soup = await fetch_html(url)
@@ -37,15 +37,12 @@ async def get_article_text_inquirer(url: str) -> str:
     return "\n\n".join(p.get_text() for p in body_soup.find_all("p"))
 
 if __name__ == "__main__":
-    test_url = "https://newsinfo.inquirer.net/"
-    results = scrape_inquirer(test_url)
-    print(len(results))
+    async def _test():
+        test_url = "https://newsinfo.inquirer.net/"
+        results = await scrape_inquirer(test_url)
+        print(len(results))
+        article_url = results[0]["url"]
+        print(await get_article_text_inquirer(article_url))
+        await close_browser()
 
-    time.sleep(2)
-
-    article_url = results[0]["url"]
-    print(get_article_text_inquirer(article_url))
-
-    close_browser()
-
-    # fix get_article_tesxt
+    asyncio.run(_test())
