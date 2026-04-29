@@ -7,7 +7,6 @@ from bot.telegram_bot import send_message
 from run_metrics import RunMetrics
 from datetime import date
 import asyncio
-import concurrent.futures
 
 INQUIRER = 'https://newsinfo.inquirer.net/'
 BBC = 'https://www.bbc.com/news/world'
@@ -15,16 +14,7 @@ TECHCRUNCH = "https://techcrunch.com/category/artificial-intelligence/"
 
 
 def send(text: str):
-    try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                future = pool.submit(asyncio.run, send_message(text))
-                future.result()
-        else:
-            loop.run_until_complete(send_message(text))
-    except RuntimeError:
-        asyncio.run(send_message(text))
+    asyncio.run(send_message(text))
 
 
 def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) -> list[str]:
