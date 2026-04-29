@@ -13,7 +13,7 @@ BBC = 'https://www.bbc.com/news/world'
 TECHCRUNCH = "https://techcrunch.com/category/artificial-intelligence/"
 
 
-def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) -> list[str]:
+async def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) -> list[str]:
     summary_list = []
 
     for a in articles:
@@ -21,7 +21,7 @@ def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) 
         article_url = a.get("url")
         metrics.record_article_attempt()
         try:
-            text = get_text_fn(article_url)
+            text = await get_text_fn(article_url)
             summary_text, original_words, summary_words, rouge_scores = summarize_article(title, text)
             print(f"Summarizing: {title}...")
             metrics.record_article_success(original_words, summary_words, rouge_scores)
@@ -37,22 +37,25 @@ def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) 
 
 
 async def inquirer(url: str, today: str, metrics: RunMetrics):
-    articles = scrape_inquirer(url)[:10]
-    summary_list = _summarize_articles(articles, get_article_text_inquirer, metrics)
+    articles = await scrape_inquirer(url)
+    articles = articles[:10]
+    summary_list = await _summarize_articles(articles, get_article_text_inquirer, metrics)
     header = f'----- INQUIRER LATEST NEWS ({today}) ----- \n\n'
     await send_message(header + "\n\n".join(summary_list))
 
 
 async def bbc(url: str, today: str, metrics: RunMetrics):
-    articles = scrape_bbc(url)[:10]
-    summary_list = _summarize_articles(articles, get_article_text_bbc, metrics)
+    articles = await scrape_bbc(url)
+    articles = articles[:10]
+    summary_list = await _summarize_articles(articles, get_article_text_bbc, metrics)
     header = f'----- BBC LATEST NEWS ({today}) ----- \n\n'
     await send_message(header + "\n\n".join(summary_list))
 
 
 async def techcrunch(url: str, today: str, metrics: RunMetrics):
-    articles = scrape_techcrunch(url)[:10]
-    summary_list = _summarize_articles(articles, get_article_text_techcrunch, metrics)
+    articles = await scrape_techcrunch(url)
+    articles = articles[:10]
+    summary_list = await _summarize_articles(articles, get_article_text_techcrunch, metrics)
     header = f'----- TECHCRUNCH LATEST NEWS ({today}) ----- \n\n'
     await send_message(header + "\n\n".join(summary_list))
 
@@ -76,7 +79,7 @@ async def main():
             print(f"[ERROR] {name} failed: {e}")
             metrics.record_scraper_failure(name)
 
-    close_browser()
+    await close_browser()
     metrics.flush()
 
 
