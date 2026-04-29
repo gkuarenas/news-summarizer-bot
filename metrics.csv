@@ -12,3 +12,4 @@ run_date,status,scrapers_ok,scrapers_failed,articles_scraped,articles_ok,avg_com
 2026-04-29T14:53:19Z,FAILED,0,3,30,27,37.0644,0.2437,0.2198,0.2325
 2026-04-29T15:08:12Z,FAILED,0,3,0,0,,,,
 2026-04-29T15:18:01Z,FAILED,0,3,0,0,,,,
+2026-04-29T15:22:13Z,FAILED,0,3,0,0,,,,
