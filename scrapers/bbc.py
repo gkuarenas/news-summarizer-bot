@@ -1,8 +1,8 @@
 from scrapers.base import fetch_html, close_browser
 import time
 
-def scrape_bbc(url):
-    soup = fetch_html(url)
+async def scrape_bbc(url):
+    soup = await fetch_html(url)
 
     articles = []
     h2_tags = soup.find_all("h2", attrs={'data-testid': 'card-headline'})
@@ -16,8 +16,8 @@ def scrape_bbc(url):
     
     return articles
 
-def get_article_text_bbc(url: str) -> str:
-    soup = fetch_html(url)
+async def get_article_text_bbc(url: str) -> str:
+    soup = await fetch_html(url)
     paragraphs = soup.find_all("p")
     return "\n\n".join(p.get_text() for p in paragraphs)
 

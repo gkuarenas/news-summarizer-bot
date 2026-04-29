@@ -4,8 +4,8 @@ import json
 import html as html_module
 import time
 
-def scrape_inquirer(url):
-    soup = fetch_html(url)
+async def scrape_inquirer(url):
+    soup = await fetch_html(url)
 
     articles = []
 
@@ -24,8 +24,8 @@ def scrape_inquirer(url):
             
     return articles
 
-def get_article_text_inquirer(url: str) -> str:
-    soup = fetch_html(url, wait_for="script[type='application/ld+json']")
+async def get_article_text_inquirer(url: str) -> str:
+    soup = await fetch_html(url, wait_for="script[type='application/ld+json']")
     script_tag = soup.find("script", type="application/ld+json")
 
     if script_tag is None:
