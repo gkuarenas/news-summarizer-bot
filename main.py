@@ -13,10 +13,6 @@ BBC = 'https://www.bbc.com/news/world'
 TECHCRUNCH = "https://techcrunch.com/category/artificial-intelligence/"
 
 
-def send(text: str):
-    asyncio.run(send_message(text))
-
-
 def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) -> list[str]:
     summary_list = []
 
@@ -40,28 +36,28 @@ def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) 
     return summary_list
 
 
-def inquirer(url: str, today: str, metrics: RunMetrics):
+async def inquirer(url: str, today: str, metrics: RunMetrics):
     articles = scrape_inquirer(url)[:10]
     summary_list = _summarize_articles(articles, get_article_text_inquirer, metrics)
     header = f'----- INQUIRER LATEST NEWS ({today}) ----- \n\n'
-    send(header + "\n\n".join(summary_list))
+    await send_message(header + "\n\n".join(summary_list))
 
 
-def bbc(url: str, today: str, metrics: RunMetrics):
+async def bbc(url: str, today: str, metrics: RunMetrics):
     articles = scrape_bbc(url)[:10]
     summary_list = _summarize_articles(articles, get_article_text_bbc, metrics)
     header = f'----- BBC LATEST NEWS ({today}) ----- \n\n'
-    send(header + "\n\n".join(summary_list))
+    await send_message(header + "\n\n".join(summary_list))
 
 
-def techcrunch(url: str, today: str, metrics: RunMetrics):
+async def techcrunch(url: str, today: str, metrics: RunMetrics):
     articles = scrape_techcrunch(url)[:10]
     summary_list = _summarize_articles(articles, get_article_text_techcrunch, metrics)
     header = f'----- TECHCRUNCH LATEST NEWS ({today}) ----- \n\n'
-    send(header + "\n\n".join(summary_list))
+    await send_message(header + "\n\n".join(summary_list))
 
 
-def main():
+async def main():
     today_date = date.today().strftime("%A, %B %d, %Y")
     metrics = RunMetrics()
 
@@ -74,15 +70,15 @@ def main():
     for scraper_fn, url in scrapers:
         name = scraper_fn.__name__
         try:
-            scraper_fn(url, today_date, metrics)
+            await scraper_fn(url, today_date, metrics)
             metrics.record_scraper_success()
         except Exception as e:
             print(f"[ERROR] {name} failed: {e}")
             metrics.record_scraper_failure(name)
 
     close_browser()
-    metrics.flush()   # → metrics.csv  +  GitHub Actions Job Summary
+    metrics.flush()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())  # single event loop, owns everything
