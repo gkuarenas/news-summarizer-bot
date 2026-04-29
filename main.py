@@ -7,27 +7,13 @@ from bot.telegram_bot import send_message
 from run_metrics import RunMetrics
 from datetime import date
 import asyncio
-import concurrent.futures
 
 INQUIRER = 'https://newsinfo.inquirer.net/'
 BBC = 'https://www.bbc.com/news/world'
 TECHCRUNCH = "https://techcrunch.com/category/artificial-intelligence/"
 
 
-def send(text: str):
-    try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                future = pool.submit(asyncio.run, send_message(text))
-                future.result()
-        else:
-            loop.run_until_complete(send_message(text))
-    except RuntimeError:
-        asyncio.run(send_message(text))
-
-
-def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) -> list[str]:
+async def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) -> list[str]:
     summary_list = []
 
     for a in articles:
@@ -35,7 +21,7 @@ def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) 
         article_url = a.get("url")
         metrics.record_article_attempt()
         try:
-            text = get_text_fn(article_url)
+            text = await get_text_fn(article_url)
             summary_text, original_words, summary_words, rouge_scores = summarize_article(title, text)
             print(f"Summarizing: {title}...")
             metrics.record_article_success(original_words, summary_words, rouge_scores)
@@ -50,28 +36,31 @@ def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMetrics) 
     return summary_list
 
 
-def inquirer(url: str, today: str, metrics: RunMetrics):
-    articles = scrape_inquirer(url)[:10]
-    summary_list = _summarize_articles(articles, get_article_text_inquirer, metrics)
+async def inquirer(url: str, today: str, metrics: RunMetrics):
+    articles = await scrape_inquirer(url)
+    articles = articles[:10]
+    summary_list = await _summarize_articles(articles, get_article_text_inquirer, metrics)
     header = f'----- INQUIRER LATEST NEWS ({today}) ----- \n\n'
-    send(header + "\n\n".join(summary_list))
+    await send_message(header + "\n\n".join(summary_list))
 
 
-def bbc(url: str, today: str, metrics: RunMetrics):
-    articles = scrape_bbc(url)[:10]
-    summary_list = _summarize_articles(articles, get_article_text_bbc, metrics)
+async def bbc(url: str, today: str, metrics: RunMetrics):
+    articles = await scrape_bbc(url)
+    articles = articles[:10]
+    summary_list = await _summarize_articles(articles, get_article_text_bbc, metrics)
     header = f'----- BBC LATEST NEWS ({today}) ----- \n\n'
-    send(header + "\n\n".join(summary_list))
+    await send_message(header + "\n\n".join(summary_list))
 
 
-def techcrunch(url: str, today: str, metrics: RunMetrics):
-    articles = scrape_techcrunch(url)[:10]
-    summary_list = _summarize_articles(articles, get_article_text_techcrunch, metrics)
+async def techcrunch(url: str, today: str, metrics: RunMetrics):
+    articles = await scrape_techcrunch(url)
+    articles = articles[:10]
+    summary_list = await _summarize_articles(articles, get_article_text_techcrunch, metrics)
     header = f'----- TECHCRUNCH LATEST NEWS ({today}) ----- \n\n'
-    send(header + "\n\n".join(summary_list))
+    await send_message(header + "\n\n".join(summary_list))
 
 
-def main():
+async def main():
     today_date = date.today().strftime("%A, %B %d, %Y")
     metrics = RunMetrics()
 
@@ -84,15 +73,15 @@ def main():
     for scraper_fn, url in scrapers:
         name = scraper_fn.__name__
         try:
-            scraper_fn(url, today_date, metrics)
+            await scraper_fn(url, today_date, metrics)
             metrics.record_scraper_success()
         except Exception as e:
             print(f"[ERROR] {name} failed: {e}")
             metrics.record_scraper_failure(name)
 
-    close_browser()
-    metrics.flush()   # → metrics.csv  +  GitHub Actions Job Summary
+    await close_browser()
+    metrics.flush()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())  # single event loop, owns everything

@@ -1,8 +1,8 @@
 from scrapers.base import fetch_html, close_browser
-import time
+import asyncio
 
-def scrape_techcrunch(url):
-    soup = fetch_html(url)
+async def scrape_techcrunch(url):
+    soup = await fetch_html(url)
 
     articles = []
 
@@ -17,20 +17,19 @@ def scrape_techcrunch(url):
     
     return articles
 
-def get_article_text_techcrunch(url: str) -> str:
-    soup = fetch_html(url)
+async def get_article_text_techcrunch(url: str) -> str:
+    soup = await fetch_html(url)
     paragraphs = soup.find_all("p", class_='wp-block-paragraph')
     return "\n\n".join(p.get_text() for p in paragraphs)
 
 if __name__ == "__main__":
-    test_url = "https://techcrunch.com/category/artificial-intelligence/"
-    results = scrape_techcrunch(test_url)
-    print(len(results))
+    async def _test():
+        test_url = "https://techcrunch.com/category/artificial-intelligence/"
+        results = await scrape_techcrunch(test_url)
+        print(len(results))
+        article_url = results[0]["url"]
+        print(article_url)
+        print(await get_article_text_techcrunch(article_url))
+        await close_browser()
 
-    time.sleep(2)
-
-    article_url = results[0]["url"]
-    print(article_url)
-    print(get_article_text_techcrunch(article_url))
-
-    close_browser()
+    asyncio.run(_test())

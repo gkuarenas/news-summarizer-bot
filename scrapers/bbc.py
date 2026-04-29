@@ -1,8 +1,8 @@
 from scrapers.base import fetch_html, close_browser
-import time
+import asyncio
 
-def scrape_bbc(url):
-    soup = fetch_html(url)
+async def scrape_bbc(url):
+    soup = await fetch_html(url)
 
     articles = []
     h2_tags = soup.find_all("h2", attrs={'data-testid': 'card-headline'})
@@ -16,19 +16,18 @@ def scrape_bbc(url):
     
     return articles
 
-def get_article_text_bbc(url: str) -> str:
-    soup = fetch_html(url)
+async def get_article_text_bbc(url: str) -> str:
+    soup = await fetch_html(url)
     paragraphs = soup.find_all("p")
     return "\n\n".join(p.get_text() for p in paragraphs)
 
 if __name__ == '__main__':
-    test_url = "https://www.bbc.com/news/world"
-    results = scrape_bbc(test_url)
-    print(len(results))
+    async def _test():
+        test_url = "https://www.bbc.com/news/world"
+        results = await scrape_bbc(test_url)
+        print(len(results))
+        article_url = results[0]["url"]
+        print(await get_article_text_bbc(article_url))
+        await close_browser()
 
-    time.sleep(2)
-
-    article_url = results[0]["url"]
-    print(get_article_text_bbc(article_url))
-
-    close_browser()
+    asyncio.run(_test())
