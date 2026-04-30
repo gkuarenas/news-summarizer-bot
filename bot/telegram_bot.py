@@ -17,7 +17,8 @@ async def send_message(text: str):
     bot = Bot(token=TOKEN)
     await bot.send_message(
         chat_id=CHAT_ID, 
-        text=text
+        text=text,
+        parse_mode="MarkdownV2"
     )
 
 if __name__ == '__main__':
