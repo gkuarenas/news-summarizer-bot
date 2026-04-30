@@ -18,7 +18,7 @@ async def _summarize_articles(articles: list[dict], get_text_fn, metrics: RunMet
     summary_list = []
 
     for a in articles:
-        title = a.get("title")
+        title = a.get("title").upper()
         article_url = a.get("url")
         metrics.record_article_attempt()
         try:
@@ -43,7 +43,7 @@ async def inquirer(url: str, today: str, metrics: RunMetrics):
     articles = await scrape_inquirer(url)
     articles = articles[:5]
     summary_list = await _summarize_articles(articles, get_article_text_inquirer, metrics)
-    message = format_section(f"🇵🇭 PH News (Inquirer) - {today}", summary_list)
+    message = format_section(f"🇵🇭 PH NEWS (INQUIRER) - {today}", summary_list)
     print(message)
     await send_message(message)
 
@@ -52,7 +52,7 @@ async def bbc(url: str, today: str, metrics: RunMetrics):
     articles = await scrape_bbc(url)
     articles = articles[:5]
     summary_list = await _summarize_articles(articles, get_article_text_bbc, metrics)
-    await send_message(format_section(f"🌍 World News (BBC) - {today}", summary_list))
+    await send_message(format_section(f"🌍 WORLD NEWS (BBC) - {today}", summary_list))
     
 
 
@@ -60,7 +60,7 @@ async def techcrunch(url: str, today: str, metrics: RunMetrics):
     articles = await scrape_techcrunch(url)
     articles = articles[:5]
     summary_list = await _summarize_articles(articles, get_article_text_techcrunch, metrics)
-    await send_message(format_section(f"💻 Tech (TechCrunch) - {today}", summary_list))
+    await send_message(format_section(f"💻 TECH (TECHCRUNCH) - {today}", summary_list))
 
 
 async def main():
