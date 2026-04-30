@@ -20,7 +20,11 @@ def summarize_article(title: str, text: str) -> tuple[str, int, int, dict]:
     original_word_count = len(input_text.split())
     truncated = input_text[:3000]
 
-    response = requests.post(API_URL, headers=HEADERS, json={"inputs": truncated})
+    response = requests.post(API_URL, headers=HEADERS, json={"inputs": truncated,
+                                                             "parameters": {
+                                                                 "min_length": 80,
+                                                                 "max_length": 130
+                                                             }})
     response.raise_for_status()
     result = response.json()
 
