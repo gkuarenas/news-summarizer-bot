@@ -6,9 +6,9 @@ A Python bot that scrapes headlines from **Inquirer, BBC, and TechCrunch**, summ
 
 ## Features
 
-- Scrapes the top 10 latest articles from 3 sources
+- Scrapes the top 5 latest articles from 3 sources
 - Summarizes each article using HuggingFace Inference API
-- Sends a formatted digest to a Telegram chat
+- Sends 3 formatted Telegram messages (one per source) in MarkdownV2
 - Runs daily via GitHub Actions, triggered reliably by cron-job.org
 - Logs per-run metrics to `metrics.csv` (committed back to the repo automatically)
 - Posts a metrics summary to the GitHub Actions Job Summary after each run
