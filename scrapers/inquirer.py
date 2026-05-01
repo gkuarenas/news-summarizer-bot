@@ -25,16 +25,30 @@ async def scrape_inquirer(url):
     return articles
 
 async def get_article_text_inquirer(url: str) -> str:
-    soup = await fetch_html(url, wait_for="script[type='application/ld+json']")
+    soup = await fetch_html(url)
+    
+    # Target the article body container directly
+    article = soup.find("div", class_="article-content-body")
+    if article:
+        paragraphs = article.find_all("p")
+        if paragraphs:
+            print("[debug] using DOM scrape path")
+            return "\n\n".join(p.get_text() for p in paragraphs)
+    
+    # Fallback: ld+json
     script_tag = soup.find("script", type="application/ld+json")
-
-    if script_tag is None:
-        raise ValueError(f"No ld+json script tag found on page: {url}")
-
-    data = json.loads(script_tag.string, strict=False)
-    article_body_html = html_module.unescape(html_module.unescape(data["articleBody"]))
-    body_soup = BeautifulSoup(article_body_html, "html.parser")
-    return "\n\n".join(p.get_text() for p in body_soup.find_all("p"))
+    if script_tag and script_tag.string:
+        data = json.loads(script_tag.string, strict=False)
+        if "articleBody" in data:
+            article_body_html = html_module.unescape(html_module.unescape(data["articleBody"]))
+            body_soup = BeautifulSoup(article_body_html, "html.parser")
+            paragraphs = body_soup.find_all("p")
+            if paragraphs:
+                return "\n\n".join(p.get_text() for p in paragraphs)
+            print("[debug] using ld+json path")
+            return body_soup.get_text()
+    
+    raise ValueError(f"Could not extract article body from {url}")
 
 if __name__ == "__main__":
     async def _test():

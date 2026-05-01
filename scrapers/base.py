@@ -41,6 +41,7 @@ async def fetch_html(url: str, wait_for: str = None, retries: int = 3) -> Beauti
 
                 if wait_for:
                     await page.wait_for_selector(wait_for, state="attached", timeout=10000)
+                    await page.wait_for_timeout(2000)
 
                 html = await page.content()
                 await context.close()
