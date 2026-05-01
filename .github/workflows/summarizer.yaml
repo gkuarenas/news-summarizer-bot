@@ -31,8 +31,11 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python main.py
 
+      - name: Ensure metrics.csv ends with newline
+        run: |
+          [ -n "$(tail -c1 metrics.csv)" ] && echo "" >> metrics.csv || true
+
       - name: Commit metrics.csv
-        # Only runs if metrics.csv was created or changed
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
